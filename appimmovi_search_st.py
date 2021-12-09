@@ -10,7 +10,7 @@ import string
 import json
 
 # escrevendo o titulo
-st. title('Teste Appimmovi Search')
+st.title('Teste Appimmovi Search')
 
 # escrevendo subtitulo
 st.write('Esta é nossa primeira tentativa de rodar o codigo do jupyter notebook no streamlit')
@@ -299,9 +299,6 @@ results_vivareal = {
     'Link Anúncio': link_list_vivareal,
 }
 
-
-
-
 # gerando dataframe invertido na horizontal com resultados preenchendo com 'None' os campos
 # vazios de diferentes tamanhos de coluna:
 df_consulta_vivareal = pd.DataFrame.from_dict(results_vivareal, orient='index')
@@ -317,38 +314,15 @@ consulta_vivareal = df_consulta_vivareal.transpose()
 consulta_vivareal['Dado'] = range(0, len(consulta_vivareal))
 consulta_vivareal.set_index('Dado', inplace=True)
 
-#convertendo o resultado em arquivo csv:
-# criando uma cache da função e não calcular ela toda vez que chama a função
-#@st.cache
-def convert_csv(df):
-    return df.to_csv().encode('utf-8')
+# convertendo o dataframe em csv e armazenando no disco local
+# para contornar erro ao abrir o dataframe original no streamlit:
+consulta_vivareal_csv = consulta_vivareal.to_csv(r'C:\Users\trindade\Desktop\teste_search_st.csv', encoding='utf-8')
 
-consulta_vivareal_csv = convert_csv(consulta_vivareal)
+# lendo o csv e convertendo-o em dataframe:
+consulta_vivareal_df = pd.read_csv(r'C:\Users\trindade\Desktop\teste_search_st.csv')
 
-st.download_button(
-     label="Download data as CSV",
-     data=consulta_vivareal_csv,
-     file_name='search_csv.csv',
-     mime='text/csv',
- )
+# mostrando o total de anúncios na página:
+st.write('Total de anúncios de imóveis na pagina: ', len(container_vivareal), 'anúncios!')
 
-#definindo a função para retornar resultado da pesquisa num dataframe:
-#def load_search():
-#    consulta_vivareal_csv = pd.read_csv(file_vivareal_csv)
-#    return consulta_vivareal_csv
-
-dataset_vivareal = st.file_uploader("upload file here", type = ['csv'])
-if dataset_vivareal is not None:
-    df_vivareal = pd.read_csv(dataset_vivareal)
-    # mostrando o total de anúncios na página:
-    st.write('Total de anúncios de imóveis na pagina: ', len(container_vivareal), 'anúncios!')
-    st.dataframe(df_vivareal)
-
-
-
-
-
-
-
-
-
+# carregando o dataframe como tabela dinamica do streamlit:
+st.dataframe(consulta_vivareal_df)
