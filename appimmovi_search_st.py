@@ -1,71 +1,40 @@
 # importando bibliotecas adicionais:
 import streamlit as st
 import pandas as pd
-import bs4
 from bs4 import BeautifulSoup
 import requests
+import time
 # importando bibliotecas padrão python:
 import re
-import string
-import json
 
 # ocultando o menu 'sanduiche' do streamlit:
-hide_menu_style = """
-        <style>
-        #MainMenu {visibility: hidden;}
-        </style>
-        """
-st.markdown(hide_menu_style, unsafe_allow_html=True)
+#hide_menu_style = """
+#       <style>
+#        #MainMenu {visibility: hidden;}
+#        </style>
+#        """
+#st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 # escrevendo o titulo
 st.title('Teste Appimmovi Search')
 
 # escrevendo subtitulo
-st.write('Esta é nossa primeira tentativa de rodar o codigo do jupyter notebook no streamlit')
-
-# criando listas vazias:
-name_site_vivareal = []
-operacao_vivareal = []
-codigo_imovel_vivareal = []
-estado_vivareal = []
-link_list_vivareal = []
-address_list_vivareal = []
-title_list_vivareal = []
-price_list_vivareal = []
-area_list_vivareal = []
-equipamentos_vivareal = []
-bedrooms_list_vivareal = []
-bathroom_list_vivareal = []
-garages_list_vivareal = []
-condominio_list_vivareal = []
-cep_vivareal = []
-link_maps_endereço = []
-link_maps_cep = []
-nome_anunciante_vivareal = []
-tel_anunciante_vivareal = []
-iptu_vivareal = []
-locais_proximos_vivareal = []
-conservacao_vivareal = []
-utilizacao_vivareal = []
-complemento_vivareal = []
-# latitude_vivareal = []
-# longitude_vivareal = []
-latitude_logr_vivareal = []
-longitude_logr_vivareal = []
-latitude_cep_vivareal = []
-longitude_cep_vivareal = []
+st.write('Primeira tentativa de rodar o codigo do jupyter notebook no streamlit')
 
 # definindo parametros para mudar a url de busca:
-# definindo cabeçalho para resolver divergencia entre janela de inspeção e codigo-fonte html facilitando scrapping
+# definindo cabeçalho para resolver divergencia entre janela de
+# inspeção e codigo-fonte html facilitando scrapping
 headers = {
     'authority': 'www.vivareal.com.br',
     'Referer': 'https://www.google.com.br/',
     'pragma': 'no-cache',
     'cache-control': 'no-cache',
     'upgrade-insecure-requests': '1',
-    # 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64; Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0 Chrome/79.0.3945.88 Safari/537.36',
+    # 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64; Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101
+    # Firefox/89.0 Chrome/79.0.3945.88 Safari/537.36',
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,'
+              'application/signed-exchange;v=b3;q=0.9',
     "Accept-Encoding": "gzip, deflate, br",
     'sec-fetch-site': 'none',
     'sec-fetch-mode': 'navigate',
@@ -76,25 +45,69 @@ headers = {
 
 }
 
+
 # fazendo requisição à url:
 url_vivareal = st.text_input('Digite o link do vivareal aqui: ')
 
 # colocando o codigo original abaixo do condicional
 # para não dar erro ao carregar a aplicação:
 if url_vivareal.title() != "":
+
+    # criando listas vazias:
+    name_site_vivareal = []
+    operacao_vivareal = []
+    codigo_imovel_vivareal = []
+    estado_vivareal = []
+    link_list_vivareal = []
+    address_list_vivareal = []
+    title_list_vivareal = []
+    price_list_vivareal = []
+    area_list_vivareal = []
+    equipamentos_vivareal = []
+    bedrooms_list_vivareal = []
+    bathroom_list_vivareal = []
+    garages_list_vivareal = []
+    condominio_list_vivareal = []
+    cep_vivareal = []
+    link_maps_endereco = []
+    link_maps_cep = []
+    nome_anunciante_vivareal = []
+    tel_anunciante_vivareal = []
+    iptu_vivareal = []
+    locais_proximos_vivareal = []
+    conservacao_vivareal = []
+    utilizacao_vivareal = []
+    complemento_vivareal = []
+    # latitude_vivareal = []
+    # longitude_vivareal = []
+    latitude_logr_vivareal = []
+    longitude_logr_vivareal = []
+    latitude_cep_vivareal = []
+    longitude_cep_vivareal = []
+
     req_vivareal = requests.get(url_vivareal, headers=headers)
     content_vivareal = req_vivareal.content
+
+    # exibindo barra de progresso da consulta web:
+    consulta_bar = st.progress(0)
+    for percent_complete in range(100):
+        time.sleep(0.5)
+        consulta_bar.progress(percent_complete + 1)
+
     # trazendo o conteudo da pagina em html:
     soup_vivareal_html = BeautifulSoup(content_vivareal, 'html.parser')
-    # definindo variavel para range variavel do 'for' de acordo com a quantidade total de anuncios na pagina representados por containers
+
+    # definindo variavel para range variavel do 'for' de acordo com a quantidade
+    # total de anuncios na pagina representados por containers
     container_vivareal = soup_vivareal_html.find_all(
         "span", {"class": "property-card__title js-cardLink js-card-title"})
+
     # trazendo conteudo da pagina em java script:
     req_vivareal_js = requests.get(url_vivareal)
     soup_vivareal_js = BeautifulSoup(req_vivareal_js.content, 'html.parser').find_all('script')[2]
-    # soup_vivareal_js_xml = BeautifulSoup(req_vivareal_js.content, 'lxml').find_all('script')[10]
     soup_vivareal_js_unicode = soup_vivareal_js.decode()
-    # soup_vivareal_js_unicode_xml = soup_vivareal_js_xml.decode()
+
+
     # definindo os itens que queremos obter da pagina (html)
     for link in range(0, len(container_vivareal)):
         d = soup_vivareal_html.find_all(
@@ -105,17 +118,19 @@ if url_vivareal.title() != "":
             "class": "property-card__title js-cardLink js-card-title"}).text.replace("", "")
         d2 = d.find_next("p", {"style": "display: block;"}).text.replace("", "")
         d3 = d.find_next("span", {
-            "class": "property-card__detail-value js-property-card-value property-card__detail-area js-property-card-detail-area"}).text.replace(
+            "class": "property-card__detail-value js-property-card-value "
+                     "property-card__detail-area js-property-card-detail-area"}).text.replace(
             "", "")
         d4 = d.find_next("li", {
-            "class": "property-card__detail-item property-card__detail-room js-property-detail-rooms"}).text.replace("", "")
+            "class": "property-card__detail-item property-card__detail-room "
+                     "js-property-detail-rooms"}).text.replace("", "")
         d5 = d.find_next("li", {
-            "class": "property-card__detail-item property-card__detail-bathroom js-property-detail-bathroom"}).text.replace(
+            "class": "property-card__detail-item property-card__detail-bathroom "
+                     "js-property-detail-bathroom"}).text.replace(
             "", "")
         d6 = d.find_next("li", {
-            "class": "property-card__detail-item property-card__detail-garage js-property-detail-garages"}).text.replace("",
-                                                                                                                         "")
-        # .text.replace("","")
+            "class": "property-card__detail-item property-card__detail-garage "
+                     "js-property-detail-garages"}).text.replace("", "")
         d7 = d.find_next("strong", {"class": "js-condo-price"})
         d8 = soup_vivareal_html.find(
             "a", {"class": "breadcrumb__item-name"}).text.replace('', '')
@@ -139,11 +154,11 @@ if url_vivareal.title() != "":
         bathroom_list_vivareal.append(d5)
         garages_list_vivareal.append(d6)
         condominio_list_vivareal.append(d7)
-        name_site_vivareal.append(d8)
+        name_site_vivareal.append(str(d8))
         operacao_vivareal.append(d9)
         estado_vivareal.append(d11)
         equipamentos_vivareal.append(d13)
-        link_maps_endereço.append(d14)
+        link_maps_endereco.append(d14)
 
     # definindo os itens que queremos obter por Regex da pagina (tag <script>):
 
@@ -184,26 +199,6 @@ if url_vivareal.title() != "":
     # iterando sobre o resultado do regex finditer e trazendo codigo por anuncio
     for tel in regex_tel_anunciante_iter:
         tel_anunciante_vivareal.append(tel.group(1))
-
-    ##trazendo dados da latitude do anúncio:
-    # regex_lat = r'"lat"+:+[-0-9.]+\.+[0-9]{6}'
-    # regex_lat_compile = re.compile(regex_lat)
-    # regex_lat_iter = regex_lat_compile.finditer(soup_vivareal_js_unicode)
-    #
-    ## iterando sobre o resultado do regex finditer e trazendo latitude por anuncio
-    # for lat in regex_lat_iter:
-    #    latitude_vivareal.append(lat.group(0)[6:])
-    #
-    #
-    ##trazendo dados da longitude do anúncio:
-    # regex_lon = r'"lon"+:+[-0-9.]+\.+[0-9]{6}'
-    # regex_lon_compile = re.compile(regex_lon)
-    # regex_lon_iter = regex_lon_compile.finditer(soup_vivareal_js_unicode)
-
-    # iterando sobre o resultado do regex finditer e trazendo longitude por anuncio
-    # for lon in regex_lon_iter:
-    #    longitude_vivareal.append(lon.group(0)[6:])
-
 
     # trazendo dados do IPTU de cada anuncio
     regex_iptu = r'"yearlyIptu"+:+"([0-9]+)"'
@@ -253,7 +248,8 @@ if url_vivareal.title() != "":
     # gerando coordenadas geográficas a partir do LOGRADOURO de cada anúncio, consumindo API GOOGLE GEOCODING
 
     for logr_geo in address_list_vivareal:
-        logr_geo_url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + logr_geo + '&key=AIzaSyAScLbiaNZspmdwXhHhGjXHKbJFrGE52gA'
+        logr_geo_url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + logr_geo + \
+                       '&key=AIzaSyAScLbiaNZspmdwXhHhGjXHKbJFrGE52gA'
         logr_resp_geo = requests.get(logr_geo_url)
         logr_soup_geo = logr_resp_geo.json()
         if logr_soup_geo['status'] == 'OK':
@@ -267,7 +263,8 @@ if url_vivareal.title() != "":
 
 
     for cep_geo in cep_vivareal:
-        cep_geo_url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + cep_geo + '&key=AIzaSyAScLbiaNZspmdwXhHhGjXHKbJFrGE52gA'
+        cep_geo_url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + cep_geo + \
+                      '&key=AIzaSyAScLbiaNZspmdwXhHhGjXHKbJFrGE52gA'
         cep_resp_geo = requests.get(cep_geo_url)
         cep_soup_geo = cep_resp_geo.json()
         if cep_soup_geo['status'] == 'OK':
@@ -290,7 +287,7 @@ if url_vivareal.title() != "":
         # 'Bairro/Cidade': cidade_vivareal,
         'Estado': estado_vivareal,
         'CEP': cep_vivareal,
-        'Mapa (Lograd.)': link_maps_endereço,
+        'Mapa (Lograd.)': link_maps_endereco,
         'Mapa (CEP)': link_maps_cep,
         'Latitude (Lograd.)': latitude_logr_vivareal,
         'Longitude (Lograd.)': longitude_logr_vivareal,
@@ -329,8 +326,10 @@ if url_vivareal.title() != "":
     # lendo o csv e convertendo-o em dataframe:
     consulta_vivareal_df = pd.read_csv(r'C:\Users\trindade\Desktop\teste_search_st.csv')
 
-    # mostrando o total de anúncios na página:
+    # mostrando o total de anúncios na página (ver como trazer a quantidade de anuncios
+    # atraves da variavel 'consulta_vivareal_df'):
     st.write('Total de anúncios de imóveis na pagina: ', len(container_vivareal), 'anúncios!')
 
-    # carregando o dataframe como tabela dinamica do streamlit:
-    st.dataframe(consulta_vivareal_df.style.format(formatter={'CEP': "{:.0f}"}))
+    # carregando o dataframe como tabela dinamica do streamlit (ver como definir
+    # a formatacao para mostrar todos os campos no dataframe do streamlit):
+    st.dataframe(consulta_vivareal_df).style.format(formatter={'CEP': "{:.0f}"}))
