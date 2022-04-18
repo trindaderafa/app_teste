@@ -332,4 +332,4 @@ if url_vivareal.title() != "":
 
     # carregando o dataframe como tabela dinamica do streamlit (ver como definir
     # a formatacao para mostrar todos os campos no dataframe do streamlit):
-    st.dataframe(consulta_vivareal_df).style.format(formatter={'CEP': "{:.0f}"}))
+    st.dataframe(consulta_vivareal_df)
