@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
+from io import BytesIO
 #import numpy as np
 
 
 #obtendo dados a partir de arquivo csv fornecido pelo site do Vivareal
-file_vivareal = 'bd_salvador_25.csv'
+file_vivareal = 'bd_salvador_26.csv'
 
 
 #definindo a função para alterar o label da coluna de coordenadas
@@ -110,8 +111,8 @@ data_table = df_vivareal[
 
 #criando caixas de texto para filtrar por area minima e maxima
 #criando variaveis de area minima e maxima
-area_min = st.sidebar.number_input('Area minima', value=0)
-area_max = st.sidebar.number_input('Area maxima', value=0)
+area_min = st.sidebar.number_input('Área mínima', value=data_table['Área'].min())
+area_max = st.sidebar.number_input('Área máxima', value=data_table['Área'].max())
 #criando variavel para filtrar a area de acordo com o valor
 #digitado nas caixas de texto de area
 data_table_area = data_table[data_table['Área'].between(area_min, area_max)]
@@ -132,13 +133,8 @@ elif (area_min > 0) or (area_max > 0):
 count_data = data_table
 count_data_area = data_table_area
 
-#************************************#
-#preparando variavel para exportação das 100 primeiras
-#linhas do dataframe (depois sera ajustado por caixa de texto
-export_data = data_table.head(100)
-
 #criando layout de coluna para mostrar controles na horizontal
-col_data_5, col_data_6 = st.columns(2)
+col_data_5, col_data_6 = st.columns([1, 2])
 
 #inserindo checkbox à primeira coluna (esquerda)
 with col_data_5:
@@ -154,9 +150,35 @@ if (
     # inserindo checkbox à segunda coluna (direita)
     with col_data_6:
         if (area_min == 0) or (area_max == 0):
-            st.write('Localizamos ', len(count_data), 'dados para este tipo de imóvel.')
+            st.write('Localizamos ', len(count_data), 'elementos comparativos de mercado')
         elif (area_min > 0) or (area_max > 0):
-            st.write('Localizamos ', len(count_data_area), 'dados para este tipo de imóvel.')
+            st.write('Localizamos ', len(count_data_area), 'elementos comparativos de mercado')
+
+
+expander_data = st.expander('Exportar tabela')
+expander_data.write("""
+     The chart above shows some numbers I picked for you.
+     I rolled actual dice for these, so they're *guaranteed* to
+     be random.
+ """)
+export_amount = st.number_input('Digite a quantidade de dados', value=0)
+
+@st.cache(ttl=24*3600)
+def convert_xls(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, float_format='%.6f', index=True, index_label='Dado')
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
+
+
+export_file_xls = convert_xls(data_table.head(100))
+export_button_xls = st.download_button(
+                 label="Exportar para Excel",
+                 data=export_file_xls,
+                 file_name='dados_mercado.xlsx',
+             )
 
 
 #criando novo dataframe para exibir dados especificos no mapa (pydeck)
@@ -181,12 +203,12 @@ data_map = df[
 view_state = pdk.ViewState(latitude=-12.975056605825293, longitude=-38.50146502854858,
                            zoom=10, bearing=None, pitch=None)
 
-#definindo o layer para mostrar no mapa
-
+#definindo variavel do dataframe de origem para
+#mostrar o mapa filtrado por area
 data_map_area = data_map[data_map['Área'].between(area_min, area_max)]
 
 if (area_min == 0) or (area_max == 0):
-    # mostrando o mapa sem filtrar area
+    # definindo o layer do mapa sem filtrar area
     layer = pdk.Layer(
         "ScatterplotLayer",
         data_map,
@@ -205,7 +227,7 @@ if (area_min == 0) or (area_max == 0):
     )
 
 elif (area_min > 0) or (area_max > 0):
-    # mostrando mapa com area filtrada
+    # definindo o layer do mapa com area filtrada
     layer = pdk.Layer(
         "ScatterplotLayer",
         data_map_area,
@@ -237,14 +259,14 @@ if check_map:
                       initial_view_state=view_state, height=500, width='100%',
                             views=[pdk.View(type="MapView", controller=True)],
                                 tooltip={"text": "Dado: {Dado}\nTipo: {TipoImovel}\nBairro: {Bairro}"
-                                "\nÁrea: {Área}m²\nPreço total: {Preçototal}\nPreço unitário: R$ {PreçoUnitario}/m²"
+                                "\nÁrea: {Área}m²\nPreço total: R$ {Preçototal}\nPreço unitário: R$ {PreçoUnitario}/m²"
                                                  "\nCoordenadas: {latitude} {longitude}"}))
     else:
         map_vivareal = st.pydeck_chart(pdk.Deck(layers=None, map_style='mapbox://styles/mapbox/light-v10',
                         initial_view_state=view_state, height=500, width='100%',
                         views=[pdk.View(type="MapView", controller=True)],
                         tooltip={"text": "Dado: {Dado}\nTipo: {TipoImovel}\nBairro: {Bairro}"
-                             "\nÁrea: {Área}m²\nPreço total: {Preçototal}\nPreço unitário: R$ {PreçoUnitario}/m²"
+                             "\nÁrea: {Área}m²\nPreço total: R$ {Preçototal}\nPreço unitário: R$ {PreçoUnitario}/m²"
                                                  "\nCoordenadas: {latitude} {longitude}"}))
 
 
