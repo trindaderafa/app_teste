@@ -38,7 +38,7 @@ st.caption('Última atualização: 25 de Maio de 2022')
 #criando uma lista para selecionar o tipo de imovel
 #usando sort_values() do pandas para classificar em ordem alfabetica
 property_types = df_vivareal['TipoImovel'].sort_values().unique()
-property_types_selected = st.sidebar.multiselect('Selecione o Tipo de imóvel',
+property_types_selected = st.sidebar.selectbox('Selecione o Tipo de imóvel',
                                                  property_types, key='type_selected')
 
 #criando uma lista para selecionar o Estado do imovel
@@ -99,7 +99,7 @@ if not garage_selected:
 
 #criando o dataframe dos dados do Vivareal
 data_table = df_vivareal[
-                       (df_vivareal['TipoImovel'].isin(property_types_selected)) &
+                       (df_vivareal['TipoImovel'].str.contains(property_types_selected)) &
                        (df_vivareal['Logradouro'].isin(property_address_selected)) &
                        (df_vivareal['Bairro'].isin(property_neighborhoods_selected)) &
                        (df_vivareal['Cidade'].isin(property_city_selected)) &
@@ -146,7 +146,7 @@ if (
         ):
     # inserindo checkbox à segunda coluna (direita)
     with col_data_6:
-        st.write('Localizamos ', len(count_data_area), 'elementos comparativos de mercado')
+        st.write('Localizamos ', len(count_data_area), 'dados de ', property_types_selected)
 
 
 expander_data = st.expander('Exportar tabela')
@@ -156,7 +156,7 @@ expander_data.write("""
      be random.
  """)
 export_amount = st.selectbox('Selecione a quantidade de dados a exportar (máximo: 100)',
-                                range(1,100+1))
+                                range(0,100+1))
 
 @st.cache(ttl=24*3600)
 def convert_xls(df):
@@ -185,7 +185,7 @@ df = df_vivareal[['TipoImovel', 'Área', 'Bairro', 'Logradouro', 'Cidade', 'Esta
 df['Dado'] = range(1, len(df)+1)
 
 data_map = df[
-                        (df['TipoImovel'].isin(property_types_selected)) &
+                        (df['TipoImovel'].str.contains(property_types_selected)) &
                         (df['Logradouro'].isin(property_address_selected)) &
                         (df['Bairro'].isin(property_neighborhoods_selected)) &
                         (df['Cidade'].isin(property_city_selected)) &
