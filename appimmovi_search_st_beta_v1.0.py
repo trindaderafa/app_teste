@@ -155,7 +155,8 @@ expander_data.write("""
      I rolled actual dice for these, so they're *guaranteed* to
      be random.
  """)
-export_amount = st.number_input('Digite a quantidade de dados', value=0)
+export_amount = st.selectbox('Selecione a quantidade de dados a exportar (máximo: 100)',
+                                range(1,100+1))
 
 @st.cache(ttl=24*3600)
 def convert_xls(df):
@@ -167,7 +168,7 @@ def convert_xls(df):
     return processed_data
 
 
-export_file_xls = convert_xls(data_table_area.head(100))
+export_file_xls = convert_xls(data_table_area.head(export_amount))
 export_button_xls = st.download_button(
                  label="Exportar para Excel",
                  data=export_file_xls,
