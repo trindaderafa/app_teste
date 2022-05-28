@@ -117,20 +117,17 @@ area_max = st.sidebar.number_input('Área máxima', value=data_table['Área'].ma
 #digitado nas caixas de texto de area
 data_table_area = data_table[data_table['Área'].between(area_min, area_max)]
 
-#condicional para mostrar o as 100 primeiras linhas
+#mostrando as 100 primeiras linhas
 #do dataframe de acordo com as areas digitadas
 #usando 'write' para mostrar o dataframe como tabela
-if (area_min == 0) or (area_max == 0):
-    #mostrando o dataframe sem filtrar area
-    st.write(data_table.head(100))
-elif (area_min > 0) or (area_max > 0):
-    #mostrando dataframe com area filtrada
-    st.write(data_table_area.head(100))
+st.write(data_table_area.head(100))
 
 
-#criando variaveis para contagem dos dados localizados
-#e para definir quantidade de dados que podem ser exportados
+#criando variavel para contagem dos dados localizados
 count_data = data_table
+
+#criando variavel para contagem dos dados localizados
+#filtrados pelas areas digitadas pelo usuario
 count_data_area = data_table_area
 
 #criando layout de coluna para mostrar controles na horizontal
@@ -149,10 +146,7 @@ if (
         ):
     # inserindo checkbox à segunda coluna (direita)
     with col_data_6:
-        if (area_min == 0) or (area_max == 0):
-            st.write('Localizamos ', len(count_data), 'elementos comparativos de mercado')
-        elif (area_min > 0) or (area_max > 0):
-            st.write('Localizamos ', len(count_data_area), 'elementos comparativos de mercado')
+        st.write('Localizamos ', len(count_data_area), 'elementos comparativos de mercado')
 
 
 expander_data = st.expander('Exportar tabela')
@@ -173,7 +167,7 @@ def convert_xls(df):
     return processed_data
 
 
-export_file_xls = convert_xls(data_table.head(100))
+export_file_xls = convert_xls(data_table_area.head(100))
 export_button_xls = st.download_button(
                  label="Exportar para Excel",
                  data=export_file_xls,
@@ -207,43 +201,22 @@ view_state = pdk.ViewState(latitude=-12.975056605825293, longitude=-38.501465028
 #mostrar o mapa filtrado por area
 data_map_area = data_map[data_map['Área'].between(area_min, area_max)]
 
-if (area_min == 0) or (area_max == 0):
-    # definindo o layer do mapa sem filtrar area
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        data_map,
-        pickable=True,
-        opacity=0.8,
-        stroked=True,
-        filled=True,
-        radius_scale=40,
-        radius_min_pixels=1,
-        radius_max_pixels=100,
-        line_width_min_pixels=1,
-        get_position=['longitude', 'latitude'],
-        get_radius="exits_radius",
-        get_fill_color=[200, 30, 0],
-        get_line_color=[200, 30, 0],
-    )
-
-elif (area_min > 0) or (area_max > 0):
-    # definindo o layer do mapa com area filtrada
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        data_map_area,
-        pickable=True,
-        opacity=0.8,
-        stroked=True,
-        filled=True,
-        radius_scale=40,
-        radius_min_pixels=1,
-        radius_max_pixels=100,
-        line_width_min_pixels=1,
-        get_position=['longitude', 'latitude'],
-        get_radius="exits_radius",
-        get_fill_color=[200, 30, 0],
-        get_line_color=[200, 30, 0],
-    )
+layer = pdk.Layer(
+    "ScatterplotLayer",
+    data_map_area,
+    pickable=True,
+    opacity=0.8,
+    stroked=True,
+    filled=True,
+    radius_scale=40,
+    radius_min_pixels=1,
+    radius_max_pixels=100,
+    line_width_min_pixels=1,
+    get_position=['longitude', 'latitude'],
+    get_radius="exits_radius",
+    get_fill_color=[200, 30, 0],
+    get_line_color=[200, 30, 0],
+)
 
 
 if check_map:
