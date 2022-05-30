@@ -4,6 +4,59 @@ import pydeck as pdk
 from io import BytesIO
 #import numpy as np
 
+#definindo titulo e icone da pagina
+st.set_page_config(
+    page_title="Appimmovi Search Beta",
+    page_icon="https://appimmovi.cc/wp-content/uploads/2020/04/cropped-Logo-appimmovi_icone_site-32x32.png",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+#ocultando menu de hamburguer, header, footer,animacao do
+#homenzinho e textos do streamlit toda vez que roda o codigo
+#durante a execução do aplicativo
+#armazenando o css na variavel
+hide_streamlit_style = """
+                <style>
+                div[data-testid="stToolbar"] {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+                }
+                div[data-testid="stDecoration"] {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+                }
+                div[data-testid="stStatusWidget"] {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+                }
+                #MainMenu {
+                visibility: hidden;
+                height: 0%;
+                }
+                header {
+                visibility: hidden;
+                height: 0%;
+                }
+                footer {
+                visibility: hidden;
+                height: 0%;
+                }
+                </style>
+                """
+
+#injetando o css atraves de markdown
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+#inserindo logo e rótulos de texto da pagina
+st.image("https://appimmovi.cc/wp-content/uploads/2021/12/Logo-appimmovi_white_sem_slogan.svg",
+                 width=200)
+#st.title('Appimmovi Search (beta)')
+st.markdown('**Pesquise elementos comparativos para sua avaliação de imóveis**')
+st.caption('Última atualização: 25 de Maio de 2022')
 
 #obtendo dados a partir de arquivo csv fornecido pelo site do Vivareal
 file_vivareal = 'bd_salvador_26.csv'
@@ -13,7 +66,7 @@ file_vivareal = 'bd_salvador_26.csv'
 # com os nomes latitude e longitude para lat e lon
 # criando uma cache da função e não calcular ela toda vez que chama a função
 # e adicionando um ttl pra armazenar o cache por no maximo 24h
-@st.cache(ttl=24*3600)
+@st.cache(ttl=24*3600, show_spinner=False)
 def load_data():
     columns = {'Latitude': 'latitude',
                'Longitude': 'longitude'}
@@ -26,14 +79,6 @@ def load_data():
 #Chamando a função recém criada e carregando os dados em um dataframe
 df_vivareal = load_data()
 
-#criando os rótulos de texto da pagina
-st.title('Appimmovi Search (beta)')
-st.write(
-    """
-    Pesquise elementos comparativos para sua avaliação de imóveis
-    """
-)
-st.caption('Última atualização: 25 de Maio de 2022')
 
 #criando uma lista para selecionar o tipo de imovel
 #usando sort_values() do pandas para classificar em ordem alfabetica
@@ -120,7 +165,13 @@ data_table_area = data_table[data_table['Área'].between(area_min, area_max)]
 #mostrando as 100 primeiras linhas
 #do dataframe de acordo com as areas digitadas
 #usando 'write' para mostrar o dataframe como tabela
-st.write(data_table_area.head(100))
+#usando condicional para nao mostrar o dataframe sem o
+#usuario ter selecionado nada
+if (
+            (st.session_state['type_selected'] and st.session_state['neighborhoods_selected']) or
+            (st.session_state['type_selected'] and st.session_state['address_selected'])
+        ):
+    st.write(data_table_area.head(100))
 
 
 #criando variavel para contagem dos dados localizados
@@ -131,15 +182,16 @@ count_data = data_table
 count_data_area = data_table_area
 
 #criando layout de coluna para mostrar controles na horizontal
-col_data_5, col_data_6 = st.columns([1, 2])
+col_data_5, col_data_6 = st.columns(2)
 
 #inserindo checkbox à primeira coluna (esquerda)
 with col_data_5:
     # criando um checkbox para mostrar/ocultar  mapa dos dados do Vivareal
-    check_map = st.checkbox('Mostrar no Mapa', disabled=False)
+    check_map = st.checkbox('Mostrar Mapa', value=True, disabled=False)
 
 #criando condicional para mostrar quantos dados foram localizados
 #de acordo com o tipo/logradouro e bairro que foram selecionados no filtro
+#usando estado da sessão quando selecionados determinados campos
 if (
             (st.session_state['type_selected'] and st.session_state['neighborhoods_selected']) or
             (st.session_state['type_selected'] and st.session_state['address_selected'])
@@ -147,33 +199,6 @@ if (
     # inserindo checkbox à segunda coluna (direita)
     with col_data_6:
         st.write('Localizamos ', len(count_data_area), 'dados de ', property_types_selected)
-
-
-expander_data = st.expander('Exportar tabela')
-expander_data.write("""
-     The chart above shows some numbers I picked for you.
-     I rolled actual dice for these, so they're *guaranteed* to
-     be random.
- """)
-export_amount = st.selectbox('Selecione a quantidade de dados a exportar (máximo: 100)',
-                                range(0,100+1))
-
-@st.cache(ttl=24*3600)
-def convert_xls(df):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df.to_excel(writer, float_format='%.6f', index=True, index_label='Dado')
-    writer.save()
-    processed_data = output.getvalue()
-    return processed_data
-
-
-export_file_xls = convert_xls(data_table_area.head(export_amount))
-export_button_xls = st.download_button(
-                 label="Exportar para Excel",
-                 data=export_file_xls,
-                 file_name='dados_mercado.xlsx',
-             )
 
 
 #criando novo dataframe para exibir dados especificos no mapa (pydeck)
@@ -244,3 +269,36 @@ if check_map:
                                                  "\nCoordenadas: {latitude} {longitude}"}))
 
 
+#criando função para usar no botao de download
+@st.cache(ttl=24*3600, show_spinner=False)
+def convert_xls(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, float_format='%.6f', index=True, index_label='Dado')
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
+
+#criando expansor para esconder/ocultar os controles para
+#download da tabela dos dados filtrados
+expander_data = st.expander('Exportar Dados')
+
+#criando colunas para serem exibidas dentro do expansor
+col_data_7, col_data_8 = expander_data.columns([2,1])
+
+#exibindo caixa de seleção e botao de download lado a lado
+with col_data_7:
+    export_amount = st.selectbox('Selecione a quantidade de dados a exportar (máximo: 50)',
+                                    range(0,50+1), disabled=False)
+with col_data_8:
+    #artificio para criar espaços acima do botao para deixar ele
+    #alinhado com a caixa de selecao
+    st.write('')
+    st.write('')
+    export_file_xls = convert_xls(data_table_area.head(export_amount))
+    export_button_xls = st.download_button(
+                    label="Exportar para Excel",
+                    data=export_file_xls,
+                    file_name='dados_mercado.xlsx',
+                    disabled=False
+                 )
