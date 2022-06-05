@@ -171,7 +171,7 @@ if (
             (st.session_state['type_selected'] and st.session_state['neighborhoods_selected']) or
             (st.session_state['type_selected'] and st.session_state['address_selected'])
         ):
-    st.write(data_table_area.head(100))
+    st.write(data_table_area.head(50))
 
 
 #criando variavel para contagem dos dados localizados
