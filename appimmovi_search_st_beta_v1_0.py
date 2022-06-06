@@ -71,7 +71,7 @@ def load_data():
     columns = {'Latitude': 'latitude',
                'Longitude': 'longitude'}
     #lendo o arquivo csv gerado pelo Excel e informado separador e codificação
-    df_vivareal = pd.read_csv(file_vivareal, sep=';', encoding='ansi', index_col='Dado')
+    df_vivareal = pd.read_csv(file_vivareal, sep=';', encoding='cp1252', index_col='Dado')
     df_vivareal = df_vivareal.rename(columns=columns)
     return df_vivareal
 
