@@ -1,5 +1,6 @@
 venv
 others
+.streamlit
 .DS_Store
 .idea
 airbnb_madrid.py
