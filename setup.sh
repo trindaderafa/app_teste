@@ -1,4 +1,3 @@
-rm -fr ~/.streamlit
 mkdir -p ~/.streamlit
 
 echo "[server]
