@@ -1,1 +1,0 @@
-web: sh setup.sh && streamlit run appimmovi_search_st_beta_v1_0.py

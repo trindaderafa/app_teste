@@ -6,7 +6,7 @@ from io import BytesIO
 
 #definindo titulo e icone da pagina
 st.set_page_config(
-    page_title="Appimmovi Search Beta",
+    page_title="Appimmovi Beta",
     page_icon="https://appimmovi.cc/wp-content/uploads/2020/04/cropped-Logo-appimmovi_icone_site-32x32.png",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -52,7 +52,7 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 #inserindo logo e rótulos de texto da pagina
-st.image("https://appimmovi.cc/wp-content/uploads/2021/12/Logo-appimmovi_white_sem_slogan.svg",
+st.sidebar.image("https://appimmovi.cc/wp-content/uploads/2021/12/Logo-appimmovi_white_sem_slogan.svg",
                  width=200)
 #st.title('Appimmovi Search (beta)')
 st.markdown('**Pesquise elementos comparativos para sua avaliação de imóveis**')
